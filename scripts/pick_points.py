@@ -11,6 +11,8 @@ mpl.use('Qt4Agg')
 
 import matplotlib.pyplot as plt
 
+from utils import read_data_chunk
+
 
 class PointGetter(object):
     def __init__(self, file=None):
@@ -39,13 +41,6 @@ class PointGetter(object):
     def on_key_release(self, event):
         if event.key == 'shift':
             self.shift_is_held = False
-
-
-def read_data_chunk(path, start=0, nrows=5000):
-    header = pandas.read_table(path, nrows=0)
-    data = pandas.read_table(path, skiprows=start + 1,
-                             nrows=nrows, names=header.columns)
-    return data
 
 
 def main():

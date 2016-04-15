@@ -6,6 +6,8 @@ import sys
 import numpy as np
 import pandas
 
+from utils import dataframe_to_csv
+
 
 def main():
     import argparse
@@ -18,7 +20,7 @@ def main():
     args = parser.parse_args()
 
     data = pandas.read_table(args.data)
-    data.query(args.query).to_csv(sys.stdout, sep='\t', index=False)
+    dataframe_to_csv(data.query(args.query))
 
 
 if __name__ == '__main__':

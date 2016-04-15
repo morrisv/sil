@@ -8,6 +8,8 @@ import glob
 
 import pandas
 
+from utils import dataframe_to_csv
+
 
 CHUNK_FILE_RE = '(?P<base>\w*)_(?P<start>[0-9]+)_(?P<stop>[0-9]+).txt'
 CHUNK_FILE_PATTERN = re.compile(CHUNK_FILE_RE)
@@ -44,6 +46,18 @@ def parse_chunk_name(fname):
 
 
 def alphabetize_chunk_files(base):
+    """Rename data chunk files so the alphabetize in chunk-order.
+
+    Parameters
+    ----------
+    base : str
+        Base name for the chunk files.
+
+    Returns
+    -------
+    list of str
+        List of the new chunk file names.
+    """
     (base, ext) = os.path.splitext(base)
 
     names = []
@@ -67,13 +81,26 @@ def alphabetize_chunk_files(base):
 
 
 def chunk_data(path, chunksize):
+    """Divide a large data file into smaller chunks.
+
+    Parameters
+    ----------
+    path : str
+        Path to the data file.
+    chunksize : int
+        Number of data lines per chunk.
+
+    Returns
+    -------
+    list of str
+        List of the new chunk file names.
+    """
     reader = pandas.read_table(path, chunksize=chunksize, skiprows=0)
 
     start = 0
     for chunk in reader:
         stop = start + len(chunk) - 1
-        chunk.to_csv(get_chunk_file_name(path, (start, stop)), sep='\t',
-                     index=False)
+        dataframe_to_csv(chunk, file=get_chunk_file_name(path, (start, stop)))
         start = stop + 1
 
     return alphabetize_chunk_files(os.path.basename(path))

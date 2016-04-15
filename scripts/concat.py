@@ -6,10 +6,12 @@ import sys
 
 import pandas
 
+from utils import dataframe_to_csv
+
 
 def concat_files(files):
     chunks = pandas.concat([pandas.read_table(f) for f in files])
-    chunks.to_csv(sys.stdout, sep=' ', index=False)
+    dataframe_to_csv(chunks)
 
 
 def main():

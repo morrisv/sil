@@ -6,11 +6,14 @@ import sys
 import numpy as np
 import pandas
 
+from utils import dataframe_to_csv
+
 
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Add a new column to a WAIS data set')
     parser.add_argument('--data', type=argparse.FileType('r'),
                         default=sys.stdin, help='Text data file')
     parser.add_argument('col', default='x', help='Name of the new column')
@@ -22,7 +25,7 @@ def main():
     data = pandas.read_table(args.data)
 
     data.loc[:, args.col] = args.val
-    data.to_csv(sys.stdout, sep='\t', index=False)
+    dataframe_to_csv(data)
 
 
 if __name__ == '__main__':
