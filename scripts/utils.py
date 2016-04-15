@@ -2,6 +2,8 @@
 import sys
 import types
 
+import pandas
+
 
 def read_data_chunk(path, start=0, nrows=5000):
     """Read rows from a data table.
@@ -63,7 +65,10 @@ def parse_range_string(range_str):
     try:
         low, high = range_str.split('-')
     except ValueError:
-        return [int(range_str)]
+        if range_str == '':
+            return []
+        else:
+            return [int(range_str)]
     else:
         return range(int(low), int(high) + 1)
 
@@ -93,7 +98,7 @@ def expand_ranges(ranges):
     if isinstance(ranges, types.StringTypes):
         ranges = ranges.split(',')
     else:
-        return parse_range_string(','.join(ranges))
+        return expand_ranges(','.join(ranges))
 
     all_ints = []
     for range in ranges:
