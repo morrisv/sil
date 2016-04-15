@@ -26,13 +26,16 @@ class PointGetter(object):
         self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
         self.fig.canvas.mpl_connect('key_release_event', self.on_key_release)
 
+        self._picked = []
+
     def on_pick(self, event):
         if self.shift_is_held:
             this_line = event.artist
             xdata, ydata = this_line.get_xdata(), this_line.get_ydata()
             ind = event.ind[0]
-            # print('{x}, {y}'.format(x=xdata[ind], y=ydata[ind]),
-            print('{x}'.format(x=xdata[ind]), file=self._file)
+            self._picked.append(xdata[ind])
+            if len(self._picked) == 2:
+                self.print_range()
 
     def on_key_press(self, event):
         if event.key == 'shift':
@@ -41,6 +44,15 @@ class PointGetter(object):
     def on_key_release(self, event):
         if event.key == 'shift':
             self.shift_is_held = False
+            self.print_range()
+
+    def print_range(self):
+        if len(self._picked) > 0:
+            range = '{low:d}'.format(low=self._picked[0])
+            if len(self._picked) > 1:
+                range += '-{high:d}'.format(high=self._picked[1])
+            print('{range}'.format(range=range), file=self._file)
+        self._picked = []
 
 
 def main():
