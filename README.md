@@ -14,7 +14,12 @@ read through stdin or specified as a file name using the `--data` option.
 All commands also accept a `-h` option that prints a brief help message and
 exits.
 
-## Extract data lines from a file
+## Examples
+
+Following are some simple examples that use the scripts in the `scripts` folder.
+These examples should be executed from within the `scripts` folder.
+
+### Extract data lines from a file
 
 The following gets just the first 10000 data rows from a data set and
 writes them to a new file.
@@ -31,7 +36,7 @@ However, `pick_rows.py` can take more complicated ranges. For example,
     $ python pick_rows.py 100-200,300-400 1000-10000 < WAIS06AData_icedata.txt
     > output.txt
 
-## Flag rows
+### Flag rows
 
 Ranges of rows are provided in the same way as with `pick_rows.py` and,
 as with `pick_rows.py`, can also be given in a file. The file must contain
@@ -45,7 +50,7 @@ The contents of `rows.txt` could be the following::
   300-400
   1000-10000
 
-## Select rows by a query string
+### Select rows by a query string
 
 Use `query_rows.py` to pick rows based on a logical expression. For example,
 the following selects rows that contain an `A` in their `flags` column.
@@ -63,7 +68,7 @@ The first command adds a `flags` column to every row and sets its value to `x`.
 The second sets the flags value for rows 100 to 200 (inclusive) to `A`. The
 third selects just those rows whose flags contain an `A`.
 
-## Pick points from a graph
+### Pick points from a graph
 
 You can graphically pick ranges of points (or single points) from a graph with
 `pick_points.py`. For example,
@@ -79,14 +84,14 @@ If the data file is large, you may want to just look at a portion of it. To do
 this, use the `--nrows` and `--start` options to set the start row and the
 number of rows to plot.
 
-## Chunk a large file into smaller ones
+### Chunk a large file into smaller ones
 
 To divide a large data file into smaller files use `chunk.py`. To following
 divides a file into files with 1000 lines each.
 
     $ python chunk.py --nrows=1000 < ../data/test_icedata.txt
 
-## Concatenate files into a single file
+### Concatenate files into a single file
 
 The reverse of `chunk.py`. Concatenate many smaller files into a single file.
 
