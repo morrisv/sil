@@ -1,0 +1,360 @@
+#### Turn data dictionaries into text files to be put out to public
+# Data process entire core
+# Clean up all directories 
+# Set corename to the ice core of interest
+# Run code
+
+import numpy as np
+import scipy as sp
+import time
+import numpy.random
+import os.path
+import sys
+import string
+import copy
+import datetime
+import os
+import pickle 
+
+from numpy import fft
+from scipy import interpolate
+from scipy.interpolate import interp1d
+from scipy.interpolate import UnivariateSpline
+from scipy import stats
+from scipy import special
+from scipy.special import erf
+from scipy import stats
+from scipy import signal
+from scipy import io
+from scipy import optimize
+from scipy import linalg
+from scipy import integrate
+from scipy.integrate import quad
+from matplotlib import pyplot as plt
+
+
+from math import sqrt, copysign, pi
+import numpy.random as random
+from numpy import where, zeros, ones, float64, array
+from numpy import inner, kron
+from numpy import exp as np_exp
+from numpy import arctan as np_arctan
+from scipy.stats import norm
+from scipy.special import gamma as sp_gamma
+
+from Tkinter import *
+import tkMessageBox
+
+corename = "WAIS06AData"
+#corename = "SPIceCoreData"
+
+##### Data level 1 - Raw data with corrections
+### Read in raw directory and output as text files
+#for root, dirs, files in os.walk('/Users/frio/GoogleDrive/'+corename+'/raw_dictionaries_completed'):
+#    print files
+#    plt.ion()
+    
+#if files[0] == '.DS_Store':
+#    files = files[1:]
+#if files[0] == 'Icon\r':
+#    files = files[1:]
+#if files[-1] == 'Icon\r':
+#    files = files[:-1]
+
+#for file in files[:]:   
+#    filepath = "/Users/frio/GoogleDrive/"+corename+"/raw_dictionaries_completed/" + file
+#    splitfilepath = filepath.rpartition("/")
+#    filename = splitfilepath[-1]
+#    print filepath
+    
+#    ##### READ IN RAW DATA FILE FROM MELTER ####################################
+#    data = open(filepath, "r")                                   
+#    data_dict = pickle.load(data) 
+    
+#    index = data_dict["index"]
+#    epoch = data_dict["epoch"]
+#    j_days = data_dict["j_days"][:-1] ### Why s j_days one data point longer?!?!
+#    time_delay = data_dict["time_delay"]
+#    if filepath == "/Users/frio/GoogleDrive/WAIS06AData/raw_dictionaries_completed/rawHIDS2038-20140212-000004Z-DataLog_User.dat" or \
+#        filepath == "/Users/frio/GoogleDrive/WAIS06AData/raw_dictionaries_completed/rawHIDS2038-20140320-000007Z-DataLog_User.dat" or \
+#            filepath == "/Users/frio/GoogleDrive/WAIS06AData/raw_dictionaries_completed/rawrawHBDS92-20110906-1013-Data.dat" or \
+#                filepath == "/Users/frio/GoogleDrive/WAIS06AData/raw_dictionaries_completed/rawrawHIDS2038-20140212-000004Z-DataLog_User.dat" or \
+#                    filepath == "/Users/frio/GoogleDrive/WAIS06AData/raw_dictionaries_completed/rawrawHIDS2038-20140320-000007Z-DataLog_User.dat":
+#        time_delay = np.append(time_delay,time_delay[-1])
+#    start_depth = data_dict["start_depth"]
+#    end_depth = data_dict["end_depth"]
+#    true_depth = data_dict["true_depth"]
+#    water_ppm = data_dict["water_ppm"]
+#    d18o = data_dict["d18o"]
+#    dD = data_dict["dD"]
+#    dexcess = data_dict["dexcess"]
+#    ec_value = data_dict["ec_value"]
+#    valco_pos = data_dict["valco_pos"]
+#    carousel_pos = data_dict["carousel_pos"]
+#    comments = data_dict["comments"]
+#    vial_num = data_dict["vial_num"]
+#    flag1 = data_dict["flag1"]
+#    flag2 = data_dict["flag2"]
+#    flag3 = data_dict["flag3"]
+#    flag4 = data_dict["flag4"]
+#    flag5 = data_dict["flag5"]
+#    flag6 = data_dict["flag6"]
+    
+#    dataout_file = "/Users/frio/GoogleDrive/"+corename+"/raw_txt/raw_txt_"+file+".txt"
+#    headers = np.transpose(np.vstack(('index','epoch','j_days','time_delay','start_depth','end_depth','true_depth','water_ppm','rawd18o','rawdD',\
+#        'dexcess','ec_value','valco_pos','carousel_pos','comments','vial_num','flag1','flag2','flag3','flag4','flag5','flag6')))
+##    print headers
+#    rawdata = np.transpose(np.vstack((index,epoch,j_days,time_delay,start_depth,end_depth,true_depth,water_ppm,d18o,dD,dexcess,ec_value,valco_pos,carousel_pos,comments,vial_num,flag1,flag2,flag3,flag4,flag5,flag6)))
+##    print rawdata
+#    rawfile = open(dataout_file, "w")
+#    np.savetxt(rawfile, headers, delimiter = "\t", fmt = ("%s"))
+#    np.savetxt(rawfile, rawdata, delimiter = "\t", fmt = ("%s"))
+#    rawfile.close()
+
+###############################################################################    
+    
+#### Data level 2 - Ice data with corrections
+## Read in ice directories and output as text file
+for root, dirs, files in os.walk('/Users/frio/GoogleDrive/'+corename+'/ice_dictionaries'):
+    print files
+    plt.ion()
+    
+if files[0] == '.DS_Store':
+    files = files[1:]
+if files[0] == 'Icon\r':
+    files = files[1:]
+if files[-1] == 'Icon\r':
+    files = files[:-1]
+icecount = 0
+
+for file in files[:]:   
+    filepath = "/Users/frio/GoogleDrive/"+corename+"/ice_dictionaries/" + file
+    splitfilepath = filepath.rpartition("/")
+    filename = splitfilepath[-1]
+    print filepath
+    
+    ##### READ IN ICE DATA FILE FROM CODE ######################################
+    data = open(filepath, "r")                                  
+    icedata_dict = pickle.load(data) 
+    
+    filepath = icedata_dict['filepath'][:-1]
+    time = icedata_dict['time'][:-1]
+    depth = icedata_dict['depth'][:-1]
+    rawd18o = icedata_dict['rawd18o'][:-1]
+    d18o = icedata_dict['d18o'][:-1]
+    rawdD = icedata_dict['rawdD'][:-1]
+    dD = icedata_dict['dD'][:-1]
+    d_excess = icedata_dict['d_excess'][:-1]
+    water = icedata_dict['water'][:-1]
+    ec = icedata_dict['ec'][:-1]
+    vial = icedata_dict['vial'][:-1]
+    ave_valco_normsigma_d18o = icedata_dict['ave_valco_normsigma_d18o'][:-1]
+    ave_valco_skewsigma_d18o = icedata_dict['ave_valco_skewsigma_d18o'][:-1]
+    ave_valco_normsigma_dD = icedata_dict['ave_valco_normsigma_dD'][:-1]
+    ave_valco_skewsigma_dD = icedata_dict['ave_valco_skewsigma_dD'][:-1]
+    ave_nea_normsigma_d18o = icedata_dict['ave_nea_normsigma_d18o'][:-1]
+    ave_nea_skewsigma_d18o = icedata_dict['ave_nea_skewsigma_d18o'][:-1]
+    ave_nea_normsigma_dD = icedata_dict['ave_nea_normsigma_dD'][:-1]
+    ave_nea_skewsigma_dD = icedata_dict['ave_nea_skewsigma_dD'][:-1]
+    meltrate = icedata_dict['meltrate']
+    flag1 = icedata_dict['flag1'][:-1]
+    flag2 = icedata_dict['flag2'][:-1]
+    flag3 = icedata_dict['flag3'][:-1]
+    flag4 = icedata_dict['flag4'][:-1]
+    flag5 = icedata_dict['flag5'][:-1]
+    flag6 = icedata_dict['flag6'][:-1]
+    prodate = icedata_dict['prodate'][:-1]
+    crunchversion = icedata_dict['crunchversion'][:-1]
+    
+    dataout_file = "/Users/frio/GoogleDrive/"+corename+"/"+corename+"_icedata.txt"
+    icefile = open(dataout_file, "a")
+    if icecount == 0:
+        headers = np.transpose(np.vstack(('filepath','time','depth','rawd18o','d18o','rawdD','dD','d_excess','water','ec',\
+            'vial','ave_valco_normsigma_d18o','ave_valco_skewsigma_d18o','ave_valco_normsigma_dD','ave_valco_skewsigma_dD',\
+                'ave_nea_normsigma_d18o','ave_nea_skewsigma_d18o','ave_nea_normsigma_dD','ave_nea_skewsigma_dD','meltrate',\
+                    'flag1','flag2','flag3','flag4','flag5','flag6','prodate','crunchversion')))
+        np.savetxt(icefile, headers, delimiter = "\t", fmt = ("%s"))
+    icecount = icecount+1
+    icedata = np.transpose(np.vstack((filepath,time,depth,rawd18o,d18o,rawdD,dD,d_excess,water,ec,\
+        vial,ave_valco_normsigma_d18o,ave_valco_skewsigma_d18o,ave_valco_normsigma_dD,ave_valco_skewsigma_dD,\
+            ave_nea_normsigma_d18o,ave_nea_skewsigma_d18o,ave_nea_normsigma_dD,ave_nea_skewsigma_dD,meltrate,\
+                flag1,flag2,flag3,flag4,flag5,flag6,prodate,crunchversion)))
+    np.savetxt(icefile, icedata, delimiter = "\t", fmt = ("%s"))
+    icefile.close()
+    
+### Read in ice data to plot 
+icefilepath = "/Users/frio/GoogleDrive/"+corename+"/"+corename+"_icedata.txt"
+icedata = np.loadtxt(icefilepath, skiprows = 1, dtype = "S")
+icedepth = icedata[:,2].astype("float") 
+icerawd18o = icedata[:,3].astype("float") 
+iced18o = icedata[:,4].astype("float") 
+icerawdD = icedata[:,5].astype("float") 
+icedD = icedata[:,6].astype("float") 
+icedexcess = icedata[:,7].astype("float")
+icemeltrate = icedata[:,19].astype("float")
+iceflag1 = icedata[:,20].astype("float")
+iceflag2 = icedata[:,21].astype("float")
+iceflag3 = icedata[:,22].astype("float")
+iceflag4 = icedata[:,23].astype("float")
+iceflag5 = icedata[:,24].astype("float")
+iceflag6 = icedata[:,25].astype("float")
+iceindex = np.arange(len(icedepth))
+
+fig641 = plt.figure(641)                    
+fig641_ax1 = fig641.add_subplot(411)
+fig641_ax1.plot(icedepth, icerawd18o, "g.", icedepth, iced18o, "b.")
+fig641_ax1.set_ylabel("d18o")
+fig641_ax2 = fig641.add_subplot(412)
+fig641_ax2.plot(icedepth, icerawdD, "m.", icedepth, icedD, "r.")
+fig641_ax2.set_ylabel("dD")
+fig641_ax3 = fig641.add_subplot(413)
+fig641_ax3.plot(icedepth, icedexcess, "k.")
+fig641_ax3.set_ylabel("d-excess")
+fig641_ax4 = fig641.add_subplot(414)
+fig641_ax4.plot(icedepth, icemeltrate, "k.")
+fig641_ax4.set_ylabel("meltrate")
+fig641_ax4.set_xlabel("Depth")
+
+################################################################################
+    
+#### Data level 3 - Trimmed data with corrections
+## Read in trimmed directories and output as text file
+for root, dirs, files in os.walk('/Users/frio/GoogleDrive/'+corename+'/trimmed_dictionaries'):
+    print files
+    plt.ion()
+    
+if files[0] == '.DS_Store':
+    files = files[1:]
+if files[0] == 'Icon\r':
+    files = files[1:]
+if files[-1] == 'Icon\r':
+    files = files[:-1]
+trimmedcount = 0
+
+for file in files[:]:   
+    filepath = "/Users/frio/GoogleDrive/"+corename+"/trimmed_dictionaries/" + file
+    splitfilepath = filepath.rpartition("/")
+    filename = splitfilepath[-1]
+    print filepath
+    
+    ##### READ IN TRIMMED DATA FILE FROM CODE ######################################
+    data = open(filepath, "r")                                   
+    trimmeddata_dict = pickle.load(data)  
+    
+    filepath = trimmeddata_dict['filepath'][:-1]  ## why is this the same length as the ice files? is ice autotrimmed before writing?
+    time = trimmeddata_dict['time'][:-1]
+    depth = trimmeddata_dict['depth'][:-1]
+    rawd18o = trimmeddata_dict['rawd18o'][:-1]
+    d18o = trimmeddata_dict['d18o'][:-1]
+    rawdD = trimmeddata_dict['rawdD'][:-1]
+    dD = trimmeddata_dict['dD'][:-1]
+    d_excess = trimmeddata_dict['d_excess'][:-1]
+    water = trimmeddata_dict['water'][:-1]
+    ec = trimmeddata_dict['ec'][:-1]
+    vial = trimmeddata_dict['vial'][:-1]
+    ave_valco_normsigma_d18o = trimmeddata_dict['ave_valco_normsigma_d18o'][:-1]
+    ave_valco_skewsigma_d18o = trimmeddata_dict['ave_valco_skewsigma_d18o'][:-1]
+    ave_valco_normsigma_dD = trimmeddata_dict['ave_valco_normsigma_dD'][:-1]
+    ave_valco_skewsigma_dD = trimmeddata_dict['ave_valco_skewsigma_dD'][:-1]
+    ave_nea_normsigma_d18o = trimmeddata_dict['ave_nea_normsigma_d18o'][:-1]
+    ave_nea_skewsigma_d18o = trimmeddata_dict['ave_nea_skewsigma_d18o'][:-1]
+    ave_nea_normsigma_dD = trimmeddata_dict['ave_nea_normsigma_dD'][:-1]
+    ave_nea_skewsigma_dD = trimmeddata_dict['ave_nea_skewsigma_dD'][:-1]
+    if file == "trimmedrawHIDS2148-20150731-000006Z-DataLog_User.dat" or \
+        file == "trimmedrawHIDS2148-20150813-000007Z-DataLog_User.dat" or \
+            file =="trimmedrawHIDS2148-20150817-152717Z-DataLog_User.dat" or \
+                file == "trimmedrawHIDS2148-20150818-000006Z-DataLog_User.dat" or \
+                    file =="trimmedrawHIDS2038-20130128-000014Z-DataLog_User.dat" or \
+                        file == "trimmedrawHIDS2038-20121013-085350Z-DataLog_User_A.dat" or \
+                            file == "trimmedrawHIDS2038-20130628-000005Z-DataLog_User.dat" or \
+                                file == "trimmedrawHIDS2038-20140110-000008Z-DataLog_User.dat":
+        meltrate = trimmeddata_dict['meltrate'][:-1]
+    else:
+        meltrate = trimmeddata_dict['meltrate']
+    flag1 = trimmeddata_dict['flag1'][:-1]
+    flag2 = trimmeddata_dict['flag2'][:-1]
+    flag3 = trimmeddata_dict['flag3'][:-1]
+    flag4 = trimmeddata_dict['flag4'][:-1]
+    flag5 = trimmeddata_dict['flag5'][:-1]
+    flag6 = trimmeddata_dict['flag6'][:-1]
+    prodate = trimmeddata_dict['prodate'][:-1]
+    crunchversion = trimmeddata_dict['crunchversion'][:-1]
+    trimindex = np.arange(len(depth))
+    
+    #### Filter as per flags
+    gooddata = [x for x in trimindex if flag1[x] == '.' and flag2[x] != 'p0'and flag3[x] == '.']
+    
+    filepath = filepath[gooddata]
+    time = time[gooddata]
+    depth = depth[gooddata]
+    rawd18o = rawd18o[gooddata]
+    d18o = d18o[gooddata]
+    rawdD = rawdD[gooddata]
+    dD = dD[gooddata]
+    d_excess = d_excess[gooddata]
+    water = water[gooddata]
+    ec = ec[gooddata]
+    vial = vial[gooddata]
+    ave_valco_normsigma_d18o = ave_valco_normsigma_d18o[gooddata]
+    ave_valco_skewsigma_d18o = ave_valco_skewsigma_d18o[gooddata]
+    ave_valco_normsigma_dD = ave_valco_normsigma_dD[gooddata]
+    ave_valco_skewsigma_dD = ave_valco_skewsigma_dD[gooddata]
+    ave_nea_normsigma_d18o = ave_nea_normsigma_d18o[gooddata]
+    ave_nea_skewsigma_d18o = ave_nea_skewsigma_d18o[gooddata]
+    ave_nea_normsigma_dD = ave_nea_normsigma_dD[gooddata]
+    ave_nea_skewsigma_dD = ave_nea_skewsigma_dD[gooddata]
+    meltrate = meltrate[gooddata]
+    flag1 = flag1[gooddata]
+    flag2 = flag2[gooddata]
+    flag3 = flag3[gooddata]
+    flag4 = flag4[gooddata]
+    flag5 = flag5[gooddata]
+    flag6 = flag6[gooddata]
+    prodate = prodate[gooddata]
+    crunchversion = crunchversion[gooddata]
+    
+    
+    dataout_file = "/Users/frio/GoogleDrive/"+corename+"/"+corename+"_trimmeddata.txt"
+    trimmedfile = open(dataout_file, "a")
+    if trimmedcount == 0:
+        headers = np.transpose(np.vstack(('filepath','time','depth','rawd18o','d18o','rawdD','dD','d_excess','water','ec',\
+            'vial','ave_valco_normsigma_d18o','ave_valco_skewsigma_d18o','ave_valco_normsigma_dD','ave_valco_skewsigma_dD',\
+                'ave_nea_normsigma_d18o','ave_nea_skewsigma_d18o','ave_nea_normsigma_dD','ave_nea_skewsigma_dD','meltrate',\
+                    'flag1','flag2','flag3','flag4','flag5','flag6','prodate','crunchversion')))
+        np.savetxt(trimmedfile, headers, delimiter = "\t", fmt = ("%s"))
+    trimmedcount = trimmedcount+1
+    trimmeddata = np.transpose(np.vstack((filepath,time,depth,rawd18o,d18o,rawdD,dD,d_excess,water,ec,\
+        vial,ave_valco_normsigma_d18o,ave_valco_skewsigma_d18o,ave_valco_normsigma_dD,ave_valco_skewsigma_dD,\
+            ave_nea_normsigma_d18o,ave_nea_skewsigma_d18o,ave_nea_normsigma_dD,ave_nea_skewsigma_dD,meltrate,\
+                flag1,flag2,flag3,flag4,flag5,flag6,prodate,crunchversion)))
+    np.savetxt(trimmedfile, trimmeddata, delimiter = "\t", fmt = ("%s"))
+    trimmedfile.close()
+    
+## Read in trimmeddata.txt file and plot?
+### Read in ice data to plot 
+trimmedfilepath = "/Users/frio/GoogleDrive/"+corename+"/"+corename+"_trimmeddata.txt"
+trimmeddata = np.loadtxt(trimmedfilepath, skiprows = 1, dtype = "S")
+trimmeddepth = trimmeddata[:,2].astype("float") 
+trimmedrawd18o = trimmeddata[:,3].astype("float") 
+trimmedd18o = trimmeddata[:,4].astype("float") 
+trimmedrawdD = trimmeddata[:,5].astype("float") 
+trimmeddD = trimmeddata[:,6].astype("float") 
+trimmeddexcess = trimmeddata[:,7].astype("float")
+trimmedmeltrate = trimmeddata[:,-4].astype("float")
+trimmedindex = np.arange(len(trimmeddepth))
+
+fig641_ax1.plot(trimmeddepth, trimmedd18o, "k.")
+fig641_ax2.plot(trimmeddepth, trimmeddD, "k.")
+fig641_ax3.plot(trimmeddepth, trimmeddexcess, "m.")
+fig641_ax4.plot(trimmeddepth, trimmedmeltrate, "g.")
+
+################################################################################
+#filepath = "/Users/frio/GoogleDrive/WAIS06AData/WAIS06AData_trimmeddata.txt"
+#data = np.loadtxt(filepath, skiprows = 1, dtype = "S")
+#good = np.where(data[:,3]!="nan")
+#gooddata = data[:][good]
+#depth = gooddata[:,2].astype("float")
+#dD = gooddata[:,6].astype("float")
+#fig841 = plt.figure(841)
+#plot(depth, dD, "r.")
+#plot(xlabel="Depth", ylabel="dD")
